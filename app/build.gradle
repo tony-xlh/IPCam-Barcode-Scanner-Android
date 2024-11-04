@@ -33,6 +33,7 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer-dash:1.4.1"
     implementation "androidx.media3:media3-ui:1.4.1"
     implementation "androidx.media3:media3-exoplayer-rtsp:1.4.1"
+    implementation 'com.dynamsoft:dynamsoftbarcodereaderbundle:10.4.2000'
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity

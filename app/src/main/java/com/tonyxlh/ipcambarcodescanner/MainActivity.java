@@ -31,6 +31,13 @@ import androidx.media3.exoplayer.video.VideoFrameMetadataListener;
 import androidx.media3.ui.PlayerView;
 import androidx.media3.common.MediaItem;
 
+import com.dynamsoft.cvr.CaptureVisionRouter;
+import com.dynamsoft.cvr.CapturedResult;
+import com.dynamsoft.cvr.EnumPresetTemplate;
+import com.dynamsoft.dbr.BarcodeResultItem;
+import com.dynamsoft.dbr.DecodedBarcodesResult;
+import com.dynamsoft.license.LicenseManager;
+
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -41,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean decoding = false;
     private boolean isVideoPlaying = false;
     private Timer timer = null;
+    private CaptureVisionRouter mRouter;
     @OptIn(markerClass = UnstableApi.class)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +60,14 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        if (savedInstanceState == null) {
+            LicenseManager.initLicense("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9", this, (isSuccess, error) -> {
+                if (!isSuccess) {
+                    error.printStackTrace();
+                }
+            });
+        }
+        mRouter = new CaptureVisionRouter(this);
         playerView = findViewById(R.id.playerView);
         MediaSource mediaSource =
                 new RtspMediaSource.Factory()
@@ -110,6 +126,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("DBR","copyresult:"+copyResult);
                 if (copyResult == PixelCopy.SUCCESS) {
                     Log.d("DBR",bitmap.getWidth()+"x"+bitmap.getHeight());
+                    CapturedResult result =  mRouter.capture(bitmap, EnumPresetTemplate.PT_READ_BARCODES);
+                    Log.d("DBR",result.toString());
+                    BarcodeResultItem[] items = result.getDecodedBarcodesResult().getItems();
+                    for (BarcodeResultItem item:items) {
+                        Log.d("DBR",item.getText());
+                    }
                 }
                 decoding = false;
                 handlerThread.quitSafely();
