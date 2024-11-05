@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.PixelCopy;
 import android.view.SurfaceView;
 import android.view.TextureView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -44,6 +45,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     private PlayerView playerView;
+    private TextView textView;
     protected Uri uri = Uri.parse("rtsp://192.168.8.65:8554/mystream");
     private boolean decoding = false;
     private boolean isVideoPlaying = false;
@@ -69,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         }
         mRouter = new CaptureVisionRouter(this);
         playerView = findViewById(R.id.playerView);
+        textView = findViewById(R.id.textView);
         MediaSource mediaSource =
                 new RtspMediaSource.Factory()
                    .createMediaSource(MediaItem.fromUri(uri));
@@ -128,9 +131,22 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("DBR",bitmap.getWidth()+"x"+bitmap.getHeight());
                     CapturedResult result =  mRouter.capture(bitmap, EnumPresetTemplate.PT_READ_BARCODES);
                     Log.d("DBR",result.toString());
-                    BarcodeResultItem[] items = result.getDecodedBarcodesResult().getItems();
-                    for (BarcodeResultItem item:items) {
-                        Log.d("DBR",item.getText());
+                    DecodedBarcodesResult decodedBarcodesResult = result.getDecodedBarcodesResult();
+                    if (decodedBarcodesResult != null) {
+                        BarcodeResultItem[] items = decodedBarcodesResult.getItems();
+                        StringBuilder sb = new StringBuilder();
+                        for (BarcodeResultItem item:items) {
+                            Log.d("DBR",item.getText());
+                            sb.append(item.getFormatString());
+                            sb.append(": ");
+                            sb.append(item.getText());
+                            sb.append("\n");
+                        }
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                textView.setText(sb.toString());
+                            }
+                        });
                     }
                 }
                 decoding = false;
